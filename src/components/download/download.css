@@ -1,0 +1,89 @@
+.download {
+    width: 100%;
+    min-height: 300px;
+    padding: 60px 20px;
+    background-color: #252b42;
+    color: white;
+    text-align: center;
+}
+
+.download .downloadContainer {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    background: transparent;
+}
+
+.downloadContainer h2 {
+    font-size: 26px;
+    margin-bottom: 10px;
+}
+
+.downloadDescription {
+    max-width: 450px;
+    margin: 0 auto 32px;
+    font-size: 11px;
+    line-height: 16px;
+    color: white;
+}
+
+.download .downloadButtons {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0 auto;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+}
+
+.download .downloadButton {
+    width: 137px;
+    height: 54px;
+    flex: 0 0 137px;
+    padding: 8px;
+    box-sizing: border-box;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    background: transparent;
+    border: 1px solid #858b9b;
+    border-radius: 7px;
+    color: white;
+    cursor: pointer;
+}
+
+.downloadButton img {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.downloadButton div {
+    text-align: left;
+    background: transparent;
+}
+
+.downloadButton p {
+    font-size: 9px;
+    margin: 0 0 4px;
+    color: white;
+}
+
+.downloadButton h3 {
+    font-size: 11px;
+    margin: 0;
+    color: white;
+}
