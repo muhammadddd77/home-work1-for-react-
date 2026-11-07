@@ -1,25 +1,33 @@
-import Header from "./components/header/header";
-import Hero from "./components/hero/hero";
-import Features from "./components/features/features";
-import Great from "./components/Great/great";
-import Download from "./components/download/download";
-import Plans from "./components/plans/plans";
-import Brances from "./components/branches/branches";
-import Footer from"./components/footer/footer"
+import Card from "./components/card";
 
-function App() {
-  return (
-    <>
-      <Header />
-      <Hero />
-      <Features />
-      <Great />
-      <Download />
-      <Plans/>
-      <Brances/>
-      <Footer/>
-    </>
-  );
-}
+const App = () => {
+    const data = [
+        {
+            id: 1,
+            title: "Muhammad",
+            age: 17
+        },
+        {
+            id: 2,
+            title: "Muhammad",
+            age: 17
+        },
+        {
+            id: 3,
+            title: "Muhammad",
+            age: 17
+        }
+    ];
+
+    return (
+        <div>
+            {
+                data.map((e) => {
+                    return <Card key={e.id} {...e} />
+                })
+            }
+        </div>
+    );
+};
 
 export default App;
