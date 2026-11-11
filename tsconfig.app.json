@@ -22,5 +22,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src", "src/Practice/AddModalPractice2.tsx", "src/Practice/AppPractice2.tsx", "src/Practice/EditModalPractice2.tsx"]
 }
