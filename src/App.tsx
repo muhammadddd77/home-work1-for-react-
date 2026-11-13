@@ -1,86 +1,126 @@
 import { useState } from "react";
-import EditModal from "./components/EditModal"
-import AddModal from "./components/AddModal"
+import { Card, Row, Col, Typography, Tag, Button } from "antd";
+import AddModal from "./components/AddModal";
+import EditModal from "./components/EditModal";
+import "./index.css";
+
+const { Title, Text } = Typography;
 
 export default function App() {
   const [data, setData] = useState([
-    { id: 1, name: "Ali", age: 20, city: "Dushanbe", job: "Desinger" },
+    { id: 1, name: "Ali", age: 20, city: "Dushanbe", job: "Designer" },
     { id: 2, name: "Vali", age: 40, city: "Dushanbe", job: "Backend" },
-    { id: 3, name: "Gani", age: 30, city: "Dushnabe", job: "Frontend" },
-  ])
-
-  const [search, setSearch] = useState("")
+    { id: 3, name: "Gani", age: 30, city: "Dushanbe", job: "Frontend" },
+  ]);
 
   const [openAdd, setOpenAdd] = useState(false);
 
   const [elem, setElem] = useState({
     id: null as number | null,
     name: "",
-    age: null,
+    age: 0,
     city: "",
     job: "",
   });
 
-  const handleClose = () => {
-    setOpenAdd(false);
-  }
-
-  const handleCloseEdit = () => {
-    setElem({ id: null, name: String, age: null ,})
-  };
-
-  const handleAdd = (name: string, age: string,city:string) => {
+  const handleAdd = (name: string, age: string, city: string, job: string) => {
     const newObj = {
       id: Date.now(),
       name: name,
       age: Number(age),
-      city: city
+      city: city,
+      job: job,
     };
 
-    setData([...data, newObj])
-    setOpenAdd(false)
-  }
-
-  const handleEdit = (id: number, name: string, age: number,city:string) => { 
-    setData((prev) => prev.map((e) => (e.id === id ? { ...e, name, age,city} : e)));
-    handleCloseEdit();
+    setData((prev) => [...prev, newObj]);
+    setOpenAdd(false);
   };
 
   const handleDelete = (id: number) => {
     setData((prev) => prev.filter((e) => e.id !== id));
   };
 
-  const filteredData = data.filter((e) =>
-    e.name.toLowerCase().includes(search.toLowerCase()),
-  )
+  const handleCloseEdit = () => {
+    setElem({ id: null, name: "", age: 0, city: "", job: "" });
+  };
+
+  const handleEdit = (
+    id: number,
+    name: string,
+    age: string,
+    city: string,
+    job: string
+  ) => {
+    setData((prev) =>
+      prev.map((e) =>
+        e.id === id ? { ...e, name, age: Number(age), city, job } : e
+      )
+    )
+    handleCloseEdit();
+  }
 
   return (
-    <div className="p-8">
-      <div className="max-w-6xl mx-auto">
-        <button onClick={() => setOpenAdd(true)} className="bg-blue-600 text-white px-5 py-2 rounded-md mb-8">Add User</button>
-        <input type="text" placeholder="Search name..." value={search} onChange={(e) => setSearch(e.target.value)} className="border border-gray-300 rounded-md px-4 py-4 mb-6 gap-4" />
+    <div className="container">
+      <div className="header">
+        <Button type="primary" onClick={() => setOpenAdd(true)}>
+          Add User
+        </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {filteredData.map((e) => {
-            return (
-              <div
-                key={e.id}
-                className="bg-white border border-slate-200 p-6 shadow-sm"
-              >
-                <h1 className="text-xl">{e.name}</h1>
-                <p className="text-gray-500 mt-2">{e.age}</p>
-                <p className="text-gray-500 mt-2">{e.city}</p>
-                <p className="text-gray-500 mt-2">{e.job}</p>
-                <button onClick={() => handleDelete(e.id)} className="w-full mt-5 py-2 text-red-600">Delete</button>
-                <button onClick={() => setElem(e)} className="w-full mt-3 py-2 border border-blue-300">Edit</button>
-              </div>
-            )
-          })}
+        <div>
+          <Title level={2}>User Management</Title>
+          <Text type="secondary">Manage your users</Text>
         </div>
-
-        {openAdd ? (<AddModal handleClose={handleClose} handleAdd={handleAdd} />) : null}
-        {elem.id !== null ? (<EditModal elem={elem} handleClose={handleCloseEdit} handleEdit={handleEdit}/>) : null}
       </div>
+
+      <Row gutter={[20, 20]}>
+        {data.map((e) => (
+          <Col span={8} key={e.id}>
+            <Card className="user-card" hoverable>
+              <Title level={4}>{e.name}</Title>
+
+              <div className="user-info">
+                <Text type="secondary">Age:</Text>
+                <Text strong>{e.age}</Text>
+              </div>
+
+              <div className="user-info">
+                <Text type="secondary">City:</Text>
+                <Text strong>{e.city}</Text>
+              </div>
+
+              <div className="job">
+                <Tag color="blue">{e.job}</Tag>
+              </div>
+
+              <Button
+                danger
+                onClick={() => handleDelete(e.id)}
+                className="delete"
+              >
+                Delete
+              </Button>
+
+              <Button onClick={() => setElem(e)} className="edit">
+                Edit
+              </Button>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+
+      <AddModal
+        open={openAdd}
+        handleAdd={handleAdd}
+        handleClose={() => setOpenAdd(false)}
+      />
+
+      {elem.id !== null && (
+        <EditModal
+          elem={elem}
+          handleClose={handleCloseEdit}
+          handleEdit={handleEdit}
+        />
+      )}
     </div>
   );
 }

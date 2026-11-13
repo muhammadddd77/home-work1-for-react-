@@ -1,19 +1,41 @@
-export default function AddModal({ handleAdd, handleClose }) {
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-lg">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6">Add User</h2>
+import { Modal, Form, Input, Button } from "antd";
 
-        <form onSubmit={(event) => {
-            event.preventDefault();
-            handleAdd(event.target.name.value, event.target.age.value)}} className="flex flex-col gap-4">
-          <input type="text" placeholder="Enter name" defaultValue="" name="name" className="w-full border border-gray-300 rounded-md px-4 py-2.5" />
-          <input type="text" placeholder="Enter age" defaultValue="" name="age" className="w-full border border-gray-300 rounded-md px-4 py-2.5" />
-          <input type="text" placeholder="Enter city" defaultValue="" name="city" className="w-full border border-gray-300 rounded-md px-4 py-2.5" />
-          <button type="submit" className="bg-blue-600 text-white py-2.5 rounded-md">Submit</button>
-          <button type="button" onClick={handleClose} className="border border-gray-300 text-gray-700 py-2.5 rounded-md">Cancel</button>
-        </form>
-      </div>
-    </div>
-  )
+function AddModal({ open, handleClose, handleAdd }: any) {
+  const [form] = Form.useForm();
+
+  const closeModal = () => {
+    form.resetFields();
+    handleClose();
+  };
+
+  return (
+    <Modal title="Add New User" open={open} onCancel={closeModal} footer={null}>
+      <Form form={form} layout="vertical" onFinish={(values) => {   handleAdd(values.name, values.age, values.city, values.job);   form.resetFields();}}>
+        <Form.Item label="Name" name="name" rules={[{ required: true }]}>
+          <Input placeholder="Enter name" />
+        </Form.Item>
+
+        <Form.Item label="Age" name="age" rules={[{ required: true }]}>
+          <Input type="number" placeholder="Enter age" />
+        </Form.Item>
+
+        <Form.Item label="City" name="city" rules={[{ required: true }]}>
+          <Input placeholder="Enter city" />
+        </Form.Item>
+
+        <Form.Item label="Job" name="job" rules={[{ required: true }]}>
+          <Input placeholder="Enter job" />
+        </Form.Item>
+
+        <div className="modal-actions">
+          <Button onClick={closeModal}>Cancel</Button>
+          <Button type="primary" htmlType="submit">
+            Add User
+          </Button>
+        </div>
+      </Form>
+    </Modal>
+  );
 }
+
+export default AddModal;

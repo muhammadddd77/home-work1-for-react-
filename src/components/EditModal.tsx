@@ -1,21 +1,37 @@
-export default function EditModal({ elem, handleEdit, handleClose }) {
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-md p-6 rounded-xl shadow-lg">
-        <h2 className="text-xl font-semibold text-gray-800 mb-6">Edit User</h2>
+import { Modal, Form, Input, Button } from "antd";
 
-        <form
-          className="flex flex-col gap-4"
-          onSubmit={(event) => {
-            event.preventDefault();
-            handleEdit(elem.id, event.target.name.value, event.target.age.value,event.target.value)}}>
-          <input defaultValue={elem.name} type="text" name="name" placeholder="Enter name" className="w-full border border-gray-300 rounded-md px-4 py-2.5"/>
-          <input defaultValue={elem.age} type="text" name="age" placeholder="Enter age" className="w-full border border-gray-300 rounded-md px-4 py-2.5"/>
-          <input defaultValue={elem.city} type="text" name="age" placeholder="Enter city" className="w-full border border-gray-300 rounded-md px-4 py-2.5"/>
-          <button type="submit" className="bg-blue-600 text-white py-2.5 rounded-md">Save</button>
-          <button type="button" onClick={handleClose} className="border border-gray-300 text-gray-700 py-2.5 rounded-md">Cancel</button>
-        </form>
-      </div>
-    </div>
+function EditModal({ elem, handleClose, handleEdit }: any) {
+  return (
+    <Modal title="Edit User" open={true} onCancel={handleClose} footer={null}>
+      <Form
+        layout="vertical"
+        initialValues={elem}
+        onFinish={(values) => { handleEdit( elem.id, values.name, values.age, values.city, values.job)}}>
+        <Form.Item label="Name" name="name">
+          <Input />
+        </Form.Item>
+
+        <Form.Item label="Age" name="age">
+          <Input type="number" />
+        </Form.Item>
+
+        <Form.Item label="City" name="city">
+          <Input />
+        </Form.Item>
+
+        <Form.Item label="Job" name="job">
+          <Input />
+        </Form.Item>
+
+        <div className="modal-actions">
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button type="primary" htmlType="submit">
+            Save Changes
+          </Button>
+        </div>
+      </Form>
+    </Modal>
   );
 }
+
+export default EditModal;
