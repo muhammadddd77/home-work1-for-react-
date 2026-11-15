@@ -1,95 +1,94 @@
-import { useState } from "react";
-import AddModal, { type User } from "./components/AddModal";
-import EditModal from "./components/EditModal";
-import { Input } from "@/components/ui/input";
+
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle,} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import AddDialog from "./components/AddModal";
+import EditModal from "./components/EditModal";
 
-export default function App() {
+const API = "https://6ace4258f338359cf1c3582c.mockapi.io/todo";
+
+type User = {
+  id: string;
+  name: string;
+  city: string;
+  age: number;
+};
+
+function App() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState("");
 
-  const [users, setUsers] = useState<User[]>([
-    { id: 1, name: "Muhammad", email: "muhammad@gmail.com", city: "Dushanbe", status: "Active" },
-    { id: 2, name: "Ali", email: "ali@gmail.com", city: "Khujand", status: "Active" },
-    { id: 3, name: "Vali", email: "vali@gmail.com", city: "Dushanbe", status: "Inactive" },
-  ]);
+  const [editOpen, setEditOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  const [editUser, setEditUser] = useState<User | null>(null);
-
-  function handleAdd(newUser: User): void {
-    setUsers([...users, newUser])
+  async function getUsers() {
+    try {
+      const { data } = await axios.get(API);
+      setUsers(data);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  function handleEdit(updatedUser: User): void {
-    const newUsers = users.map((user) => {
-      if (user.id === updatedUser.id) {
-        return updatedUser
-      }
-      return user
-    })
-    setUsers(newUsers);
-    setEditUser(null);
+  useEffect(() => {
+    getUsers();
+  }, []);
+
+  async function deleteUser(id: string) {
+    try {
+      await axios.delete(API + "/" + id);
+      getUsers();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  function handleDelete(id: number): void {
-    setUsers(users.filter((user) => user.id !== id));
-  }
+  const searchedUsers = users.filter((user) =>
+    user.name.toString().toLowerCase().includes(search.toLowerCase())
+  );
 
-  const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase().trim())
-  )
+  const filteredUsers = searchedUsers.filter((user) =>
+    user.city.toString().toLowerCase().includes(selected.toLowerCase())
+  );
 
   return (
-    <div className="min-h-screen bg-muted/40 p-8">
-      <div className="mx-auto max-w-6xl">
+    <div className="p-5">
+      <h1 className="mb-5 text-2xl font-bold">Users CRUD</h1>
+      <Button onClick={() => setOpen(true)}>Add User</Button>
+      <AddDialog open={open} setOpen={setOpen} api={API} getUsers={getUsers} />
+      <EditModal open={editOpen} setOpen={setEditOpen} api={API} getUsers={getUsers} user={selectedUser}/>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="mt-2 text-muted-foreground">
-            Manage your users in one place.
-          </p>
-        </div>
+      <div className="my-5 flex gap-3">
+        <Input placeholder="Search by name..." value={search} onChange={(e) => setSearch(e.target.value)}/>
+        <select value={selected} onChange={(e) => setSelected(e.target.value)} className="rounded-md border p-2">
+          <option value="">All</option>
+          <option value="Dushanbe">Dushanbe</option>
+          <option value="Khujand">Khujand</option>
+          <option value="Bokhtar">Bokhtar</option>
+          <option value="Kulob">Kulob</option>
+          <option value="Indiya">Indiya</option>
+        </select>
+      </div>
 
-        <div className="mb-8 flex items-center justify-between gap-4">
-          <Input placeholder="Search users..." value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm bg-background" />
-          <AddModal onAdd={handleAdd} />
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredUsers.map((user) => (
-            <Card key={user.id}>
-              <CardHeader>
-                <CardTitle>{user.name}</CardTitle>
-                <Badge>{user.status}</Badge>
-              </CardHeader>
-
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Email: {user.email}
-                </p>
-
-                <p className="mt-2 text-sm text-muted-foreground">
-                  City: {user.city}
-                </p>
-
-                <div className="mt-4 flex gap-2">
-                  <Button onClick={() => setEditUser(user)}>
-                    Edit
-                  </Button>
-
-                  <Button variant="outline" onClick={() => handleDelete(user.id)}>
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {editUser && (<EditModal user={editUser} onSave={handleEdit} onCancel={() => setEditUser(null)} />)}
-
+      <div className="mt-5 grid grid-cols-3 gap-4">
+        {filteredUsers.map((user) => (
+          <Card key={user.id}>
+            <CardContent className="pt-5">
+              <h2>{user.name}</h2>
+              <p>City: {user.city}</p>
+              <p>Age: {user.age}</p>
+              <Button variant="destructive" onClick={() => deleteUser(user.id)}>Delete</Button>
+              <Button onClick={() => { setSelectedUser(user); setEditOpen(true)}}>Edit</Button>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   )
 }
+
+export default App;

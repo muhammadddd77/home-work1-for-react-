@@ -1,55 +1,75 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/components/ui/dialog";
-import type { User } from "./AddModal";
 
-interface EditModalProps {
-  user: User;
-  onSave: (user: User) => void;
-  onCancel: () => void;
-}
+type User = {
+  id: string;
+  name: string;
+  city: string;
+  age: number;
+};
 
-export default function EditModal(props: EditModalProps) {
-  const [name, setName] = useState(props.user.name);
-  const [email, setEmail] = useState(props.user.email);
-  const [city, setCity] = useState(props.user.city);
+type Props = {
+  open: boolean;
+  setOpen: (value: boolean) => void;
+  api: string;
+  getUsers: () => void;
+  user: User | null;
+};
 
-  function handleEdit(): void {
-    if (name === "" || email === "" || city === "") {
+function EditModal({ open, setOpen, api, getUsers, user }: Props) {
+  const [name, setName] = useState("");
+  const [city, setCity] = useState("");
+  const [age, setAge] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name);
+      setCity(user.city);
+      setAge(user.age.toString());
+    }
+  }, [user]);
+
+  async function editUser() {
+    if (name.trim() === "" || city.trim() === "" || age === "") {
       return;
     }
 
-    const updatedUser: User = {
-      id: props.user.id,
-      name: name,
-      email: email,
-      city: city,
-      status: props.user.status,
+    if (user === null) {
+      return;
     }
-    props.onSave(updatedUser);
+
+    try {
+      const updatedUser = {
+        name: name,
+        city: city,
+        age: Number(age),
+      };
+
+      await axios.put(api + "/" + user.id, updatedUser);
+      setOpen(false);
+      getUsers();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
-    <Dialog open={true} onOpenChange={(open) => { 
-        if (!open) {props.onCancel()}}}>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
         </DialogHeader>
-
-        <div className="flex flex-col gap-4">
-          <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={props.onCancel}>Cancel</Button>
-
-          <Button onClick={handleEdit}>Save Changes</Button>
-        </div>
+        <Input placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
+        <Input type="number" placeholder="Enter age" value={age} onChange={(e) => setAge(e.target.value)} />
+        <Button onClick={editUser}>Save</Button>
+        <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
+
+export default EditModal;

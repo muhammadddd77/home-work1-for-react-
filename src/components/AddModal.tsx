@@ -1,66 +1,57 @@
 import { useState } from "react";
+import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle} from "@/components/ui/dialog";
 
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  city: string;
-  status: "Active" | "Inactive";
+type Props = {
+  open: boolean;
+  setOpen: (value: boolean) => void;
+  api: string;
+  getUsers: () => void;
 }
 
-interface AddModalProps {
-  onAdd: (user: User) => void;
-}
-
-export default function AddModal(props: AddModalProps) {
-  const [open, setOpen] = useState(false);
-
+function AddDialog({ open, setOpen, api, getUsers }: Props) {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [city, setCity] = useState("");
+  const [age, setAge] = useState("");
 
-  function handleAdd(): void {
-    if (name === "" || email === "" || city === "") {
+  async function addUser() {
+    if (name.trim() === "" || city.trim() === "" || age === "") {
       return;
     }
 
-    const newUser: User = {
-      id: Date.now(),
-      name: name,
-      email: email,
-      city: city,
-      status: "Active",
-    };
-    props.onAdd(newUser);
-    setName("");
-    setEmail("");
-    setCity("");
-    setOpen(false);
+    try {
+      const newUser = {
+        name: name,
+        city: city,
+        age: Number(age),
+      };
+      await axios.post(api, newUser);
+      setName("");
+      setCity("");
+      setAge("");
+      setOpen(false);
+      getUsers();
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button>Add User</Button>} />
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New User</DialogTitle>
+          <DialogTitle>Add User</DialogTitle>
         </DialogHeader>
-
-        <div className="flex flex-col gap-4">
-          <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
-          <Input placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} />
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-
-          <Button onClick={handleAdd}>Save User</Button>
-        </div>
+        <Input placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} />
+        <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
+        <Input type="number" placeholder="Enter age" value={age} onChange={(e) => setAge(e.target.value)} />
+        <Button onClick={addUser}>Save</Button>
+        <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
       </DialogContent>
     </Dialog>
   );
 }
+
+export default AddDialog;
