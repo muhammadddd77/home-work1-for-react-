@@ -1,75 +1,73 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle,} from "@/components/ui/dialog";
-
-type User = {
-  id: string;
-  name: string;
-  city: string;
-  age: number;
-};
+import { Input } from "@/components/ui/input";
 
 type Props = {
-  open: boolean;
-  setOpen: (value: boolean) => void;
-  api: string;
-  getUsers: () => void;
-  user: User | null;
+  user: {
+    id: string;
+    name: string;
+    age: number;
+    city: string;
+  };
+  getUsers: () => Promise<void>;
 };
 
-function EditModal({ open, setOpen, api, getUsers, user }: Props) {
+function EditModal({ user, getUsers }: Props) {
+  const [open, setOpen] = useState(false);
+
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
   const [age, setAge] = useState("");
+  const [city, setCity] = useState("");
 
-  useEffect(() => {
-    if (user) {
-      setName(user.name);
-      setCity(user.city);
-      setAge(user.age.toString());
-    }
-  }, [user]);
+  let api = "https://6ace4258f338359cf1c3582c.mockapi.io/todo";
 
-  async function editUser() {
-    if (name.trim() === "" || city.trim() === "" || age === "") {
-      return;
-    }
+  function openEdit() {
+    setName(user.name);
+    setAge(String(user.age));
+    setCity(user.city);
+    setOpen(true);
+  }
 
-    if (user === null) {
-      return;
-    }
+  async function editUser(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
     try {
-      const updatedUser = {
+      await axios.put(`${api}/${user.id}`, {
         name: name,
-        city: city,
         age: Number(age),
-      };
+        city: city,
+      });
 
-      await axios.put(api + "/" + user.id, updatedUser);
+      await getUsers();
+
       setOpen(false);
-      getUsers();
     } catch (error) {
       console.log(error);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit User</DialogTitle>
-        </DialogHeader>
-        <Input placeholder="Enter name" value={name} onChange={(e) => setName(e.target.value)} />
-        <Input placeholder="Enter city" value={city} onChange={(e) => setCity(e.target.value)} />
-        <Input type="number" placeholder="Enter age" value={age} onChange={(e) => setAge(e.target.value)} />
-        <Button onClick={editUser}>Save</Button>
-        <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-      </DialogContent>
-    </Dialog>
-  );
+    <>
+      <Button variant="outline" onClick={openEdit}>Edit</Button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit User</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={editUser} className="flex flex-col gap-3">
+            <Input placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required/>
+            <Input type="number" placeholder="Age" value={age} onChange={(e) => setAge(e.target.value)} required />
+            <Input placeholder="City" value={city} onChange={(e) => setCity(e.target.value)} required />
+            <Button type="submit">
+              Save Changes</Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
 }
 
 export default EditModal;
