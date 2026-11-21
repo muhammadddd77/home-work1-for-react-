@@ -1,55 +1,60 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { lazy, Suspense } from "react";
+import { createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
+import Layout from "./pages/Layout";
+import Loading from "./pages/Loading";
 
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import Section1 from "./components/Section1";
-import Section2 from "./components/Section2";
-import Section3 from "./components/Section3";
-import Section4 from "./components/Section4";
-import Section5 from "./components/Section5";
-import Footer from "./components/Footer";
-import Booking from "./components/Booking";
-import NotFound from "./components/NotFound";
-
-import Todos from "./pages/Todos";
-import TodoById from "./pages/TodoById";
+const BigHome = lazy(() => import("./components/Home/BigHome"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const BigMenu = lazy(() => import("./components/Menu/BigMenu"));
+const BigContact = lazy(() => import("./components/Contact/BigContact"));
+const BigAbout = lazy(() => import("./components/About/BigAbout"));
+const Reservations = lazy(() => import("./pages/Reservations"));
+const BigPortfolio = lazy(() => import("./components/Portfolio/BigPortfolio"));
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: (
-      <>
-        <Header />
-        <Hero />
-        <Section1 />
-        <Section2 />
-        <Section3 />
-        <Section4 />
-        <Section5 />
-        <Footer />
-      </>
-    ),
-  },
-  {
-    path: "/booking",
-    element: <Booking />,
-  },
-  {
-    path: "/crud",
-    element: <Todos />,
-  },
-  {
-    path: "/crud/:id",
-    element: <TodoById />,
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: <BigHome />,
+      },
+    ],
   },
   {
     path: "*",
     element: <NotFound />,
   },
+  {
+    path: "/menu",
+    element: <BigMenu />,
+  },
+  {
+    path: "/contact",
+    element: <BigContact />,
+  },
+  {
+    path: "/about",
+    element: <BigAbout />,
+  },
+  {
+    path: "/portfolio",
+    element: <BigPortfolio />,
+  },
+  {
+    path: "/reservations",
+    element: <Reservations />,
+  },
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={<Loading />}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 }
 
 export default App;
