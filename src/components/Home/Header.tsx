@@ -15,6 +15,7 @@ function Header() {
           <Link to="/contact" className="transition hover:text-[#C5A572]">Contact</Link>
           <Link to="/about" className="transition hover:text-[#C5A572]">About</Link>
           <Link to="/portfolio" className="transition hover:text-[#C5A572]">Portfolio</Link>
+          <Link to="/crud" className="transition hover:text-[#C5A572]">Crud</Link>
         </nav>
 
         <div className="flex items-center gap-5">

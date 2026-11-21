@@ -20,6 +20,7 @@ function Hero() {
             <Link to="/contact">Contact</Link>
             <Link to="/about">About</Link>
             <Link to="/portfolio">Portfolio</Link>
+            <Link to="/crud">Crud</Link>
           </nav>
 
           <div className="flex items-center gap-6">

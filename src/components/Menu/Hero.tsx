@@ -20,6 +20,7 @@ function Hero() {
             <Link to="/contact" className="hover:text-[#C5A572]">Contact</Link>
             <Link to="/about" className="hover:text-[#C5A572]">About</Link>
             <Link to="/portfolio" className="hover:text-[#C5A572]">Portfolio</Link>
+            <Link to="/crud" className="hover:text-[#C5A572]">Crud</Link>
           </nav>
 
           <div className="flex items-center gap-6">
