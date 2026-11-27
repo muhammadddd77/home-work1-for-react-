@@ -1,219 +1,117 @@
-import axios from "axios";
-import { lazy, Suspense, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "./components/ui/button";
-import { Input } from "./components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,} from "./components/ui/dialog";
-import type { Todo } from "./components/TodoTable";
+import { useReducer, useState } from "react";
+import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,} from "./components/ui/dialog";
+import { Button } from "./components/ui/button"
 
-export const api = "https://to-dos-api.softclub.tj/api/to-dos";
+export const initialState = {
+  value: 0,
+  data: [{ id: 1, name: "Ahmad", status: false }],
+}
 
-const TodoTable = lazy(() => import("./components/TodoTable"));
+function reducer(state, action) {
+  if (action.key == "delete") {
+    return { data: state.data.filter((e) => e.id != action.value) };
+  }
 
-const validationSchema = z.object({
-  name: z.string().min(2, "Minimum 2 letters").max(20, "Maximum 20 letters"),
-  description: z.string().min(5, "Minimum 5 letters").max(100, "Maximum 100 letters"),
-});
+  if (action.key == "edit") {
+    return {
+      data: state.data.map((e) =>
+        e.id == action.value.id ? action.value : e
+      ),
+    };
+  }
 
-type FormValues = z.infer<typeof validationSchema>;
+  if (action.key == "add") {
+    return { data: [...state.data, action.value] };
+  }
+
+  return state
+}
 
 function App() {
-  const navigate = useNavigate();
 
-  const [data, setData] = useState<Todo[]>([]);
-  const [open, setOpen] = useState(false);
-  const [elem, setElem] = useState<Todo | null>(null);
-  const [serverError, setServerError] = useState("");
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [open, setOpen] = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(validationSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-    },
-  });
-
-  async function getUsers() {
-    try {
-      const res = await axios.get(api);
-      setData(res.data.data);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async function handleDelete(id: number) {
-    try {
-      await axios.delete(api, {
-        params: { id },
-      });
-
-      await getUsers();
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  async function onSubmit(values: FormValues) {
-    try {
-      setServerError("");
-
-      if (elem) {
-        await axios.put(api, values, {
-          params: { id: elem.id },
-        });
-      } else {
-        await axios.post(api, values);
-      }
-
-      await getUsers();
-
-      reset();
-      setElem(null);
-      setOpen(false);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  function openAdd() {
-    setElem(null);
-    reset();
-    setServerError("");
-    setOpen(true);
-  }
-
-  function openEdit(item: Todo) {
-    setElem(item);
-
-    reset({
-      name: item.name,
-      description: item.description,
-    });
-
-    setServerError("");
-    setOpen(true);
-  }
-
-  useEffect(() => {
-    getUsers();
-  }, []);
+  const [editUser, setEditUser] = useState(null);
+  const [name, setName] = useState("");
 
   return (
-    <div className="min-h-screen bg-gray-100 p-5">
-      <div className="mx-auto max-w-5xl">
-        <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-800">
-              Todo List
-            </h1>
+    <div className="min-h-screen bg-[#0f172a] px-5 py-12 text-white">
+      <div className="mx-auto max-w-xl">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger render={<Button variant="default">Open Dialog</Button>} />
+          <DialogContent className="sm:max-w-sm bg-slate-900 text-white border-slate-700">
+            <form onSubmit={(e) => { e.preventDefault(); const name = e.target.elements.name.value;
+                let obj = {
+                  id: Date.now(),
+                  name: name,
+                  status: false,
+                };
+                dispatch({ key: "add", value: obj });
+                e.target.reset();
+                setOpen(false)
+              }}>
+              <DialogHeader>
+                <DialogTitle>Add User</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-3 py-5">
+                <label htmlFor="name" className="text-sm text-slate-300">
+                  Name
+                </label>
+                <input id="name" name="name" placeholder="Enter name..." required className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500" />
+              </div>
+              <DialogFooter>
+                <DialogClose render={<Button type="button" variant="destructive">Cancel</Button>} />
+                <Button type="submit">Save changes</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
 
-            <p className="text-sm text-gray-500">
-              Manage your tasks
-            </p>
-          </div>
+        {state.data.map((e) => {
+          return (
+            <div className="mb-3 mt-4 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-5">
+              <h1 className="text-lg font-semibold">{e.name}</h1>
+              <button className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium transition hover:bg-red-500" onClick={() => dispatch({ key: "delete", value: e.id })}>Delete</button>
+              <button onClick={() => setEditUser(e)}>Edit</button>
+              <h3 className="text-sm text-slate-400">
+                {e.status ? "Active" : "Inactive"}
+              </h3>
+              <input className="h-5 w-5 cursor-pointer accent-blue-500" checked={e.status} type="checkbox" onChange={() => dispatch({ key: "edit", value: { ...e, status: !e.status },})} />
+            </div>
+          )
+        })}
 
-          <Button onClick={openAdd}>
-            + Add New
-          </Button>
-        </header>
-
-        <Suspense fallback={<p className="py-5 text-center">Loading...</p>}>
-          <TodoTable
-            data={data}
-            onInfo={(id) => navigate(`/info/${id}`)}
-            onEdit={openEdit}
-            onDelete={handleDelete}
-          />
-        </Suspense>
-      </div>
-
-      <Dialog
-        open={open}
-        onOpenChange={(value) => {
-          setOpen(value);
-          if (!value) {
-            reset();
-            setElem(null);
-            setServerError("");
-          }
-        }}
-      >
-        <DialogContent>
+      <Dialog open={!!editUser} onOpenChange={(value) => { if (!value) setEditUser(null) }}>
+       <DialogContent className="sm:max-w-sm bg-slate-900 text-white border-slate-700">
+        <form onSubmit={(e) => { e.preventDefault(); const name = e.target.elements.name.value;
+            let update = {
+              ...editUser,
+              name: name,
+            };
+            dispatch({ key: "edit", value: update });
+            e.target.reset();
+            setEditUser(null)
+          }}>
           <DialogHeader>
-            <DialogTitle>
-              {elem ? "Edit Todo" : "Add New Todo"}
-            </DialogTitle>
-
-            <DialogDescription>
-              Enter your todo information
-            </DialogDescription>
+            <DialogTitle>Edit User</DialogTitle>
           </DialogHeader>
-
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Name
-              </label>
-
-              <Input {...register("name")} placeholder="Name" />
-
-              {errors.name && (
-                <p className="text-sm text-red-500">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="mb-1 block text-sm font-medium">
-                Description
-              </label>
-
-              <Input
-                {...register("description")}
-                placeholder="Description"
-              />
-
-              {errors.description && (
-                <p className="text-sm text-red-500">
-                  {errors.description.message}
-                </p>
-              )}
-            </div>
-
-            {serverError && (
-              <p className="text-sm text-red-500">
-                {serverError}
-              </p>
-            )}
-
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setOpen(false)}
-              >
-                Cancel
-              </Button>
-
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Saving..." : elem ? "Save" : "Add"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+          <div className="grid gap-3 py-5">
+            <label htmlFor="name" className="text-sm text-slate-300">
+              Name
+            </label>
+            <input id="name" name="name" defaultValue={editUser?.name || ""} placeholder="Enter name..." required className="rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-white outline-none focus:border-blue-500" />
+          </div>
+          <DialogFooter>
+            <DialogClose render={<Button type="button" variant="destructive">Cancel</Button>} />
+            <Button type="submit">Save changes</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+     </Dialog>
     </div>
-  );
+  </div>
+  )
 }
 
 export default App;
