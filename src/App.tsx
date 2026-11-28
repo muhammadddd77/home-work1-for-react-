@@ -1,39 +1,14 @@
-import { useReducer, useState } from "react";
+import { useState } from "react";
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,} from "./components/ui/dialog";
-import { Button } from "./components/ui/button"
-
-export const initialState = {
-  value: 0,
-  data: [{ id: 1, name: "Ahmad", status: false }],
-}
-
-function reducer(state, action) {
-  if (action.key == "delete") {
-    return { data: state.data.filter((e) => e.id != action.value) };
-  }
-
-  if (action.key == "edit") {
-    return {
-      data: state.data.map((e) =>
-        e.id == action.value.id ? action.value : e
-      ),
-    };
-  }
-
-  if (action.key == "add") {
-    return { data: [...state.data, action.value] };
-  }
-
-  return state
-}
+import { Button } from "./components/ui/button";
+import { useTodo } from "./components/TodoContext";
 
 function App() {
 
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const [open, setOpen] = useState(false)
+  const { state, dispatch } = useTodo();
+  const [open, setOpen] = useState(false);
 
-  const [editUser, setEditUser] = useState(null);
-  const [name, setName] = useState("");
+  const [editUser, setEditUser] = useState<(typeof state.data)[number] | null>(null);
 
   return (
     <div className="min-h-screen bg-[#0f172a] px-5 py-12 text-white">
@@ -41,14 +16,14 @@ function App() {
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button variant="default">Open Dialog</Button>} />
           <DialogContent className="sm:max-w-sm bg-slate-900 text-white border-slate-700">
-            <form onSubmit={(e) => { e.preventDefault(); const name = e.target.elements.name.value;
-                let obj = {
+            <form onSubmit={(e) => { e.preventDefault(); const name = ((e.target as HTMLFormElement).elements.namedItem("name") as HTMLInputElement).value;
+                const obj = {
                   id: Date.now(),
                   name: name,
                   status: false,
-                };
+                }
                 dispatch({ key: "add", value: obj });
-                e.target.reset();
+                (e.target as HTMLFormElement).reset();
                 setOpen(false)
               }}>
               <DialogHeader>
@@ -70,7 +45,7 @@ function App() {
 
         {state.data.map((e) => {
           return (
-            <div className="mb-3 mt-4 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <div key={e.id} className="mb-3 mt-4 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900 p-5">
               <h1 className="text-lg font-semibold">{e.name}</h1>
               <button className="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium transition hover:bg-red-500" onClick={() => dispatch({ key: "delete", value: e.id })}>Delete</button>
               <button onClick={() => setEditUser(e)}>Edit</button>
@@ -84,13 +59,15 @@ function App() {
 
       <Dialog open={!!editUser} onOpenChange={(value) => { if (!value) setEditUser(null) }}>
        <DialogContent className="sm:max-w-sm bg-slate-900 text-white border-slate-700">
-        <form onSubmit={(e) => { e.preventDefault(); const name = e.target.elements.name.value;
-            let update = {
-              ...editUser,
-              name: name,
-            };
-            dispatch({ key: "edit", value: update });
-            e.target.reset();
+        <form onSubmit={(e) => { e.preventDefault(); const name = ((e.target as HTMLFormElement).elements.namedItem("name") as HTMLInputElement).value;
+            if (editUser) {
+              let update = {
+                ...editUser,
+                name: name,
+              };
+              dispatch({ key: "edit", value: update });
+            }
+            (e.target as HTMLFormElement).reset();
             setEditUser(null)
           }}>
           <DialogHeader>
